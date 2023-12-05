@@ -42,21 +42,25 @@
  */
 
 class Que{
-    var queue = Array<Pair<Int,Int>>(100){Pair(-1,-1)}
+    val MAX_NUM = 500 //왜 500되면 통과되냐...?? 100은 안되고
+    var queue = Array<Pair<Int,Int>>(MAX_NUM){Pair(-1,-1)}
     var front = 0
     var rear = -1
     var size = 0
 
     fun insert(p :Pair<Int,Int>):Pair<Int,Int>{
-        rear = (rear+1)%100
+        rear = (rear+1)%MAX_NUM
         queue[rear] = p
         size++
         return queue[rear]
     }
 
-    fun delete(){
-        front = (front+1)%100
+    fun delete():Pair<Int,Int>{
+        var s = peek()
+        front = (front+1)%MAX_NUM
         size--
+
+        return s
     }
 
     fun peek():Pair<Int,Int>{
@@ -67,7 +71,10 @@ class Que{
         return size == 0
     }
     fun max():Int{//max 값을 찾아주는 함수
-        var i = queue.maxBy{it.second}.second
+
+        //단,범위내에서 max 값을 찾아줘야함
+        var temp = queue.sliceArray(front..rear)
+        var i = temp.maxOf{it.second}
         return i
     }
 }
@@ -81,13 +88,27 @@ class Solution {
         maps.forEach{
             que.insert(it) //
         }
-        while(que.isEmpty()){
+
+        var max = 0
+        var count = 0 // 몇번 실행됬는지!
+        while(!que.isEmpty()){
             //max 값을 찾는다
+            max = que.max()
             //max 값이 나올떄 까지 디큐,이큐 실행
+            while(que.peek().second!=max){
+                que.insert(que.delete())
+            }
+            count++
             //max 값이 나오면 location 의 값을 비교 하여 값이 맞다면 return
+            if(que.peek()==maps[location]){
+                answer = count
+                break
+            }
             //만약 값이 아니면 디큐
+            que.delete()
 
         }
+        answer = count
         return answer
     }
 }
@@ -96,9 +117,10 @@ fun main(){
 
     var a =Solution()
 
-    a.solution(intArrayOf(2,1,3,2),2) //1
+//    a.solution(intArrayOf(2,1,3,2),2) //1
     //c d a b 순으로 2 3 0 1
-    a.solution(intArrayOf(1,1,9,1,1),0) //5
+//    a.solution(intArrayOf(1,1,9,1,1,1),0) //5
     // c d e f a b 순으로  2 3 4 0 1
+    a.solution(intArrayOf(3),0) //4
 
 }
